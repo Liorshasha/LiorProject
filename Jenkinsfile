@@ -24,11 +24,24 @@ podTemplate(cloud: 'kubernetes', containers: [
 	    checkout scm
           }
         } // end chackout
-
+ container('docker') {
        stage('Hello') {
-            container('docker') {
+           
               echo "Building docker image..."
               sh "docker build -t ${appimage}:${apptag} ."
+            }
+       stage('Login and Push') {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_TOKEN'
+                )]) {
+                sh """
+                    echo $DOCKER_TOKEN | docker login -u $DOCKER_USER --password-stdin
+                    docker push $appimage:$apptag
+                """
+                    
+                }
             }
         } //end hello
     }
