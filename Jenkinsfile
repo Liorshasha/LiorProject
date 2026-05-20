@@ -25,10 +25,10 @@ podTemplate(cloud: 'kubernetes', containers: [
           }
         } // end chackout
 
-        stage('Hello') {
+       stage('Hello') {
             container('docker') {
               echo "Building docker image..."
-              sh " docker build $appimage"
+              sh "docker build -t ${appimage}:${apptag} ."
             }
         } //end hello
     }
