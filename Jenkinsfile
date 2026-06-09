@@ -15,13 +15,13 @@ podTemplate(cloud: 'kubernetes', containers: [
         args: '99d'
     ),
     containerTemplate(
-        name: 'Bandit',
+        name: 'bandit',
         image: 'cytopia/bandit:latest', 
         command: 'sleep',
         args: '99d'
     ),
      containerTemplate(
-        name: 'Docker', 
+        name: 'docker', 
         image: 'docker:26-dind', // Use the latest stable DinD image
         privileged: true,      // Essential for Docker daemon to run
         args: '--storage-driver=vfs' // VFS is safest for K8s, though slower
@@ -49,8 +49,8 @@ podTemplate(cloud: 'kubernetes', containers: [
                     sh "trivy fs . --exit-code 0"               
                 }
             },
-            'Bandit scan':{
-                container('Bandit'){ 
+            'bandit scan':{
+                container('bandit'){ 
                     echo "Bandit runnig"  
                     sh "bandit -r ."} 
             }
