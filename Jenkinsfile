@@ -8,8 +8,20 @@ podTemplate(cloud: 'kubernetes', containers: [
         name: 'jnlp', 
         image: 'jenkins/inbound-agent:latest'
     ),
+       containerTemplate(
+        name: 'trivy',
+        image: 'aquasec/trivy:latest',
+        command: 'sleep',
+        args: '99d'
+    ),
+    containerTemplate(
+        name: 'Bandit',
+        image: 'cytopia/bandit:latest', 
+        command: 'sleep',
+        args: '99d'
+    ),
      containerTemplate(
-        name: 'docker', 
+        name: 'Docker', 
         image: 'docker:26-dind', // Use the latest stable DinD image
         privileged: true,      // Essential for Docker daemon to run
         args: '--storage-driver=vfs' // VFS is safest for K8s, though slower
@@ -18,14 +30,36 @@ podTemplate(cloud: 'kubernetes', containers: [
     emptyDirVolume(mountPath: '/var/lib/docker', memory: false) // Q: Why do we need this volume?
   ]) {
     node(POD_LABEL) {
-        stage('chackout') {
+        stage('chackout scm') {
             container('jnlp') {
             sh '/usr/bin/git config --global http.sslVerify false'
 	    checkout scm
           }
         } // end chackout
+        stage("linting")
+        {parallel(
+            'Flake8 check':{echo "Flake8 check"}
+             'ShellCheck':{echo "ShellCheck"}
+        )     
+        stage("Security Scanning")
+        {parallel(
+            'Trivy for Docker':{
+                container('trivy'){ 
+                    echo "trivy runnig"  
+                    sh "trivy fs . --exit-code 0"               
+                }
+            }
+            'Bandit scan':{
+                container('Bandit'){ 
+                    echo "Bandit runnig"  
+                    sh "bandit -r ."} 
+            }
+            
+        )
+        
+        }
  container('docker') {
-       stage('Hello') {
+       stage('docker build') {
            
               echo "Building docker image..."
               sh "docker build -t ${appimage}:${apptag} ."
@@ -54,4 +88,5 @@ podTemplate(cloud: 'kubernetes', containers: [
         } //end hello
     }
 }
+  }
   }
