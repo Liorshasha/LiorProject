@@ -52,7 +52,7 @@ podTemplate(cloud: 'kubernetes', containers: [
             'bandit scan':{
                 container('bandit'){ 
                     echo "Bandit runnig"  
-                   echo "sh "bandit -r .""}
+                    echo "sh bandit -r ."}
             }
             
         )
