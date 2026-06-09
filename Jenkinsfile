@@ -38,7 +38,7 @@ podTemplate(cloud: 'kubernetes', containers: [
         } // end chackout
         stage("linting")
         {parallel(
-            'Flake8 check':{echo "Flake8 check"}
+            'Flake8 check':{echo "Flake8 check"},
              'ShellCheck':{echo "ShellCheck"}
         )     
         stage("Security Scanning")
