@@ -48,7 +48,7 @@ podTemplate(cloud: 'kubernetes', containers: [
                     echo "trivy runnig"  
                     sh "trivy fs . --exit-code 0"               
                 }
-            }
+            },
             'Bandit scan':{
                 container('Bandit'){ 
                     echo "Bandit runnig"  
