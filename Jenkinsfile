@@ -8,7 +8,7 @@ podTemplate(cloud: 'kubernetes', containers: [
         name: 'jnlp', 
         image: 'jenkins/inbound-agent:latest'
     ),
-    containerTemplate(
+       containerTemplate(
         name: 'trivy',
         image: 'aquasec/trivy:latest',
         command: 'sleep',
@@ -20,81 +20,80 @@ podTemplate(cloud: 'kubernetes', containers: [
         command: 'sleep',
         args: '99d'
     ),
-    containerTemplate(
+     containerTemplate(
         name: 'docker', 
         image: 'docker:26-dind', // Use the latest stable DinD image
         privileged: true,      // Essential for Docker daemon to run
         args: '--storage-driver=vfs' // VFS is safest for K8s, though slower
     )], 
-    volumes: [
-        emptyDirVolume(mountPath: '/var/lib/docker', memory: false)
-    ]) {
-
+  volumes: [
+    emptyDirVolume(mountPath: '/var/lib/docker', memory: false) // Q: Why do we need this volume?
+  ]) {
     node(POD_LABEL) {
-        
-        stage('Checkout SCM') {
+        stage('chackout scm') {
             container('jnlp') {
-                sh '/usr/bin/git config --global http.sslVerify false'
-                checkout scm
-            }
-        } // end Checkout
-
-        stage("Linting") {
-            parallel(
-                'Flake8 check': { 
-                    echo "Flake8 check" 
-                },
-                'ShellCheck': { 
-                    echo "ShellCheck" 
+            sh '/usr/bin/git config --global http.sslVerify false'
+	    checkout scm
+          }
+        } // end chackout
+        stage("linting")
+        {parallel(
+            'Flake8 check':{echo "Flake8 check"},
+             'ShellCheck':{echo "ShellCheck"}
+        )     
+        stage("Security Scanning")
+        {parallel(
+            'Trivy for Docker':{
+                container('trivy'){ 
+                    echo "trivy runnig"  
+                    sh "trivy fs . --exit-code 0"               
                 }
-            )     
-        } // end Linting
-
-        stage("Security Scanning") {
-            parallel(
-                'Trivy for Docker': {
-                    container('trivy') { 
-                        echo "Trivy running"  
-                        sh "trivy fs . --exit-code 0"               
-                    }
-                },
-                'bandit scan': {
-                    container('bandit') { 
-                        echo "Bandit running"  
-                        echo "sh bandit -r ."
-                    }
-                }
-            )
-        } // end Security Scanning
-        
-        container('docker') {
-            stage('Docker Build') {
-                echo "Building docker image..."
-                sh "docker build -t ${appimage}:${apptag} ."
+            },
+            'bandit scan':{
+                container('bandit'){ 
+                    echo "Bandit runnig"  
+                    echo "sh bandit -r ."}
             }
             
-            stage('Login and Push') {
+        )
+        
+        }
+ container('docker') {
+       stage('docker build') {
+           
+              echo "Building docker image..."
+              sh "docker build -t ${appimage}:${apptag} ."
+            }
+       stage('Login and Push') {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_TOKEN'
                 )]) {
-                    sh """
-                    echo \$DOCKER_TOKEN | docker login -u \$DOCKER_USER --password-stdin
-                    docker push ${appimage}:${apptag}
-                    """
+                sh """
+                    echo $DOCKER_TOKEN | docker login -u $DOCKER_USER --password-stdin
+                    docker push $appimage:$apptag
+                """
+                    
                 }
             }
-            
-            stage('Install Helm') {
-                sh """
-                apk add --no-cache curl bash
-                curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-                chmod 700 get_helm.sh
-                ./get_helm.sh
-                helm template ${appname} ./chart
-                """
-            } 
-        } // end docker container block
-    } // end node
-} // end podTemplate
+             stage('install helm') {
+             sh """
+            apk add --no-cache curl bash
+            curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
+            chmod 700 get_helm.sh
+            ./get_helm.sh
+            helm template ${appname} ./chart
+             """
+        } //end hello
+stage('Helm install - TBD') {    
+    
+            echo "git clone https://github.com/Liorshasha/argo-repo.git"
+            echo "cd argo_gitops"
+            echo "helm template my-app ./helm > ${appname}.yaml"
+            echo "git add ${appname}.yaml && git commit -m "${appname}.yaml" && git push"            }
+        
+    }
+}
+  }
+  }
