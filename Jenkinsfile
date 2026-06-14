@@ -97,7 +97,7 @@ podTemplate(cloud: 'kubernetes', containers: [
             git config --global --add safe.directory \$(pwd)
             git add ${appname}.yaml
             git commit -m "push to git repo"
-	        git push git push https://x-access-token:${git_token}@github.com/Liorshasha/argo-repo.git HEAD:main
+	        git push https://x-access-token:${git_token}@github.com/Liorshasha/argo-repo.git HEAD:main
 	
         
 			
