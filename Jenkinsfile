@@ -94,7 +94,7 @@ podTemplate(cloud: 'kubernetes', containers: [
             helm template my-app ../chart > ${appname}.yaml
 			git config --global user.name 'Jenkins Bot'
             git config --global user.email 'jenkins-bot@example.com'
-          #  git config --global --add safe.directory \$(pwd)
+            git config --global --add safe.directory \$(pwd)
             git add ${appname}.yaml
             git commit -m "push to git repo"
 	        git push git push https://x-access-token:${git_token}@github.com/Liorshasha/argo-repo.git HEAD:main
