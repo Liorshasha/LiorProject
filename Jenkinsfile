@@ -90,7 +90,7 @@ podTemplate(cloud: 'kubernetes', containers: [
             ./get_helm.sh
 
             git clone https://github.com/Liorshasha/argo-repo.git
-            cd argo_gitops
+            cd argo-repo
             helm template my-app ./helm > ${appname}.yaml
             git add ${appname}.yaml
             git commit -m "push to git repo"
