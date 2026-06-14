@@ -78,22 +78,32 @@ podTemplate(cloud: 'kubernetes', containers: [
                 }
             }
              stage('install helm') {
+				 withCredentials([usernamePassword(
+                    credentialsId: 'github-creds',
+                    usernameVariable: 'git_user',
+                    passwordVariable: 'git_token'
+                )]) {
              sh """
             apk add --no-cache curl bash
             curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
             chmod 700 get_helm.sh
             ./get_helm.sh
-            helm template ${appname} ./chart
-             """
-        } //end hello
-stage('Helm install - TBD') {    
-    
-            echo "git clone https://github.com/Liorshasha/argo-repo.git"
-            echo "cd argo_gitops"
-            echo "helm template my-app ./helm > ${appname}.yaml"
-            echo "git add ${appname}.yaml && git commit -m "${appname}.yaml" && git push"            }
+
+            git clone https://github.com/Liorshasha/argo-repo.git
+            cd argo_gitops
+            helm template my-app ./helm > ${appname}.yaml
+            git add ${appname}.yaml
+            git commit -m "push to git repo"
+	        git push git push https://x-access-token:${git_token}@github.com/Liorshasha/argo-repo.git HEAD:main
+	
         
+			
+             """
+        } //end hello    
+			
     }
-}
   }
   }
+    }
+  }
+  
