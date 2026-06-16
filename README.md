@@ -14,6 +14,6 @@ kubectl --namespace default port-forward svc/jenkins 8080:8080
  Add this addons : Blue Ocean, Pipline: Stage View, Kubernetes CLI
 
  Add cred before runnig pipeline (Docker hub + Github)
-
+Change Branch to */main
 
 
