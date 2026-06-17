@@ -1,6 +1,6 @@
 # service_type should be NodePort, ClusterIP or LoadBalancer
 service_type: ClusterIP
-replicas: 1
+replicas: 2
 pod:
   image: "liorshasha/myapp-my_project"
   tag: "latest"
