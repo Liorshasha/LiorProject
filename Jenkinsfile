@@ -91,7 +91,7 @@ podTemplate(cloud: 'kubernetes', containers: [
 
             git clone https://github.com/Liorshasha/argo-repo.git
             cd argo-repo
-            helm template my-app ../chart > ${appname}.yaml
+            helm template my-app ../chart --set image.tag=${BUILD_NUMBER} > ${appname}.yaml
 			git config --global user.name 'Jenkins Bot'
             git config --global user.email 'jenkins-bot@example.com'
             git config --global --add safe.directory \$(pwd)
